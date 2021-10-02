@@ -1,6 +1,9 @@
 CREATE DATABASE IF NOT EXISTS wholesale;
 USE wholesale;
 
+DROP TABLE IF EXISTS stock;
+DROP TABLE IF EXISTS order_line;
+DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS warehouse;
 DROP TABLE IF EXISTS district;
 DROP TABLE IF EXISTS customer;
@@ -72,4 +75,80 @@ CREATE TABLE IF NOT EXISTS customer
     FAMILY         c_full_address(C_STREET_1, C_STREET_2, C_CITY, C_STATE, C_ZIP),
     FAMILY         c_meta(C_PHONE, C_SINCE, C_CREDIT, C_CREDIT_LIM, C_DISCOUNT),
     FAMILY         c_static_data(C_DATA)
+);
+
+CREATE TABLE IF NOT EXISTS orders
+(
+    O_ID         INTEGER       NOT NULL,
+    O_W_ID       INTEGER       NOT NULL,
+    O_D_ID       INTEGER       NOT NULL,
+    O_C_ID       INTEGER       NOT NULL,
+    O_CARRIER_ID INTEGER,
+    O_OL_CNT     DECIMAL(2, 0),
+    O_ALL_LOCAL  DECIMAL(1, 0),
+    O_ENTRY_D    TIMESTAMP,
+    PRIMARY KEY  (O_W_ID, O_D_ID, O_ID),
+    FOREIGN KEY  (O_W_ID, O_D_ID, O_C_ID) REFERENCES customer (C_W_ID, C_D_ID, C_ID),
+    FAMILY o_txn_info (O_ID, O_W_ID, O_D_ID, O_C_ID, O_CARRIER_ID),
+    FAMILY o_meta (O_OL_CNT, O_ALL_LOCAL, O_ENTRY_D)
+);
+
+IMPORT INTO orders (O_W_ID, O_D_ID, O_ID, O_C_ID, O_CARRIER_ID, O_OL_CNT, O_ALL_LOCAL, O_ENTRY_D) CSV DATA ("http://127.0.0.1:8000/order.csv");
+
+DROP TABLE IF EXISTS item;
+CREATE TABLE IF NOT EXISTS item
+(
+    I_ID         INTEGER            NOT NULL,
+    I_NAME       VARCHAR(24)        NOT NULL,
+    I_PRICE      DECIMAL(5, 2)      NOT NULL,
+    I_IM_ID      INTEGER,
+    I_DATA       VARCHAR(50),
+    PRIMARY KEY  (I_ID),
+    FAMILY       i_key_info (I_ID, I_NAME, I_PRICE),
+    FAMILY       i_meta (I_IM_ID, I_DATA)
+);
+
+IMPORT INTO item (I_ID, I_NAME, I_PRICE, I_IM_ID, I_DATA) CSV DATA ("http://127.0.0.1:8000/item.csv");
+
+CREATE TABLE IF NOT EXISTS order_line
+(
+    OL_W_ID        INTEGER     NOT NULL,
+    OL_D_ID        INTEGER     NOT NULL,
+    OL_O_ID        INTEGER     NOT NULL,
+    OL_NUMBER      INTEGER     NOT NULL,
+    OL_I_ID        INTEGER     NOT NULL REFERENCES item (I_ID),
+    OL_DELIVERY_D  TIMESTAMP,
+    OL_AMOUNT      DECIMAL(6, 2),
+    OL_SUPPLY_W_ID INTEGER,
+    OL_QUANTITY    DECIMAL(2, 0),
+    OL_DIST_INFO   CHAR(24),
+    PRIMARY KEY    (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER),
+    FOREIGN KEY    (OL_W_ID, OL_D_ID, OL_O_ID) REFERENCES orders (O_W_ID, O_D_ID, O_ID),
+    FAMILY         ol_key_info (OL_NUMBER, OL_O_ID, OL_W_ID, OL_D_ID, OL_DELIVERY_D, OL_I_ID, OL_AMOUNT, OL_SUPPLY_W_ID, OL_QUANTITY),
+    FAMILY         ol_meta (OL_DIST_INFO)
+);
+
+
+CREATE TABLE IF NOT EXISTS stock
+(
+    S_W_ID       INTEGER       NOT NULL REFERENCES warehouse (W_ID),
+    S_I_ID       INTEGER       NOT NULL REFERENCES item (I_ID),
+    S_QUANTITY   DECIMAL(4,0)  NOT NULL DEFAULT 0,
+    S_YTD        DECIMAL(8,2)  NOT NULL DEFAULT 0.00,
+    S_ORDER_CNT  INTEGER       NOT NULL DEFAULT 0,
+    S_REMOTE_CNT INTEGER       NOT NULL DEFAULT 0,
+    S_DIST_01    CHAR(24),
+    S_DIST_02    CHAR(24),
+    S_DIST_03    CHAR(24),
+    S_DIST_04    CHAR(24),
+    S_DIST_05    CHAR(24),
+    S_DIST_06    CHAR(24),
+    S_DIST_07    CHAR(24),
+    S_DIST_08    CHAR(24),
+    S_DIST_09    CHAR(24),
+    S_DIST_10    CHAR(24),
+    S_DATA       VARCHAR(50),
+    PRIMARY KEY  (S_W_ID, S_I_ID),
+    FAMILY       s_txn_info (S_W_ID, S_I_ID, S_QUANTITY, S_YTD, S_ORDER_CNT, S_REMOTE_CNT),
+    FAMILY       s_meta (S_DIST_01, S_DIST_02, S_DIST_03, S_DIST_04, S_DIST_05, S_DIST_06, S_DIST_07, S_DIST_08, S_DIST_09, S_DIST_10, S_DATA)
 );
