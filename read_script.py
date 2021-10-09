@@ -1,21 +1,21 @@
 import psycopg2
 
-conn = psycopg2.connect(
-    database='wholesale',
-    user='root',
-    sslmode='verify-full',
-    sslrootcert='../certs/ca.crt',
-    sslcert='../certs/client.root.crt',
-    sslkey='../certs/client.root.key',
-    port=26278,
-    host='xcnd45.comp.nus.edu.sg',
-    password='cs4224hadmin'
-)
+# conn = psycopg2.connect(
+#     database='wholesale',
+#     user='root',
+#     sslmode='verify-full',
+#     sslrootcert='../certs/ca.crt',
+#     sslcert='../certs/client.root.crt',
+#     sslkey='../certs/client.root.key',
+#     port=26278,
+#     host='xcnd45.comp.nus.edu.sg',
+#     password='cs4224hadmin'
+# )
 
 
 # 5.
-def get_stock_level_transaction(s, w_id, d_id, t, l):
-    data_cursor = conn.cursor()
+def get_stock_level_transaction(data_cursor, w_id, d_id, t, l):
+    # data_cursor = conn.cursor()
 
     get_next_order_query = "select D_NEXT_O_ID from district where d_w_id={} and d_id={};".format(w_id, d_id)
 
@@ -43,8 +43,8 @@ def get_stock_level_transaction(s, w_id, d_id, t, l):
 
 #6
 # TODO: Compelete the logic
-def get_popular_items_transaction(i, w_id, d_id, l):
-    data_cursor = conn.cursor()
+def get_popular_items_transaction(data_cursor, w_id, d_id, l):
+    # data_cursor = conn.cursor()
 
     get_next_order_query = "select D_NEXT_O_ID from district where d_w_id={} and d_id={};".format(w_id, d_id)
 
@@ -100,8 +100,8 @@ def get_popular_items_transaction(i, w_id, d_id, l):
 
 
 #7
-def get_top_balance_transaction(t):
-    data_cursor = conn.cursor()
+def get_top_balance_transaction(data_cursor):
+    # data_cursor = conn.cursor()
 
     get_top_ten_customers = "select c_first, c_middle, c_last, c_balance, w_name, d_name from customer " \
                             "join district on c_d_id = d_id " \
@@ -120,8 +120,8 @@ def get_top_balance_transaction(t):
 
 
 #8
-def get_related_customer_transaction(r, c_w_id, c_d_id, c_id):
-    data_cursor = conn.cursor()
+def get_related_customer_transaction(data_cursor, c_w_id, c_d_id, c_id):
+    # data_cursor = conn.cursor()
 
     # 1. Get customers associated with different warehouses
     get_in_scope_customers = "select distinct c_id, c_w_id, c_d_id from customer where c_w_id!={};".format(c_w_id)
@@ -165,6 +165,6 @@ def get_related_customer_transaction(r, c_w_id, c_d_id, c_id):
 
 
 
-get_related_customer_transaction("R", 1, 9, 1658)
+# get_related_customer_transaction("R", 1, 9, 1658)
 
 
