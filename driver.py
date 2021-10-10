@@ -64,17 +64,18 @@ count = 0
 data_cursor = conn.cursor()
 
 throughput_for_all = []
-for file in list_of_files[:4]:
-    print('This is file ', file)
+clients_performance = []
+
+for file in list_of_files:
+
     f = open(transaction_file + file, "r")
     # append each line in the file to a list
     temp_data = f.read().splitlines()
 
-    clients_performance = []
     num_of_trxn = 0
     total_trxn_time = 0
     trxn_latency_lst = []
-    for line in temp_data[:4]:
+    for line in temp_data:
         input_params = line.split(',')
         print(input_params)
 
@@ -88,7 +89,7 @@ for file in list_of_files[:4]:
     client_throughput = round(num_of_trxn / total_trxn_time, 2)
     throughput_for_all.append(client_throughput)
     trxn_latency_ndarr_dist = np.array(trxn_latency_lst)
-    clients_performance.append([
+    client_performance_record = [
         num_of_trxn,
         round(total_trxn_time, 2),
         client_throughput,
@@ -96,7 +97,9 @@ for file in list_of_files[:4]:
         round(median(trxn_latency_lst), 2),
         round(np.percentile(trxn_latency_ndarr_dist, 95), 2),
         round(np.percentile(trxn_latency_ndarr_dist, 99), 2)
-    ])
+    ]
+    # print('This is file ', file, client_performance_record)
+    clients_performance.append(client_performance_record)
 
     count += len(temp_data)
     lines.extend(temp_data)
