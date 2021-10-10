@@ -79,9 +79,9 @@ CREATE TABLE IF NOT EXISTS customer
 
 CREATE TABLE IF NOT EXISTS orders
 (
-    O_ID         INTEGER       NOT NULL,
     O_W_ID       INTEGER       NOT NULL,
     O_D_ID       INTEGER       NOT NULL,
+    O_ID         INTEGER       NOT NULL,
     O_C_ID       INTEGER       NOT NULL,
     O_CARRIER_ID INTEGER,
     O_OL_CNT     DECIMAL(2, 0),
