@@ -16,9 +16,9 @@ def new_order (conn, cid, wid, did, num_items, items):
     with conn.cursor() as cur:
         # Retrieve the next available order number D_NEXT_O_ID and tax for district
         cur.execute(
-            "SELECT D_NEXT_O_ID, D_TAX FROM district WHERE D_W_ID = %s AND D_ID = %s", (wid, did)
+            "SELECT D_NEXT_O_ID FROM district WHERE D_W_ID = %s AND D_ID = %s", (wid, did)
         )
-        oid, dtax = cur.fetchone()
+        oid = cur.fetchone()[0]
 
         # Update the district by incrementing D_NEXT_O_ID by one
         cur.execute(
@@ -89,6 +89,11 @@ def new_order (conn, cid, wid, did, num_items, items):
             "SELECT W_TAX FROM warehouse WHERE W_ID = %s", (wid, )
         )
         wtax = cur.fetchone()[0]
+
+        cur.execute(
+            "SELECT D_TAX FROM district WHERE D_W_ID = %s AND D_ID = %s", (wid, did)
+        )
+        dtax = cur.fetchone()[0]
 
         cur.execute(
             "SELECT C_DISCOUNT FROM customer WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (wid, did, cid)
