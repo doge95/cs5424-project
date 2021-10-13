@@ -6,11 +6,9 @@
 # 4. SUPPLIER WAREHOUSE[i] = Supplier warehouse for ith item, i ∈ [1,NUM ITEMS] 
 # 5. QUANTITY[i] = Quantity ordered for ith item, i ∈ [1,NUM ITEMS]
 
-from read_script import *
 import logging
-import psycopg2
 from psycopg2 import sql
-from psycopg2.errors import SerializationFailure
+
 
 def new_order (conn, cid, wid, did, num_items, items):
     with conn.cursor() as cur:
@@ -27,7 +25,12 @@ def new_order (conn, cid, wid, did, num_items, items):
 
         # Create a new order
         # O_ALL_LOCAL = 0 if there exists some i∈[1,NUM ITEMS] such that SUPPLIER_WAREHOUSE[i] ̸= W_ID; otherwise, O_ALL_LOCAL = 1
-        item_nums, supply_w_ids, quantities = list(zip(*items))
+        print(items)
+        item_nums_str, supply_w_ids_str, quantities_str = list(zip(*items))
+        item_nums = [int(x) for x in item_nums_str]
+        supply_w_ids = [int(x) for x in supply_w_ids_str]
+        quantities = [int(x) for x in quantities_str]
+
         all_local = all(supply_w_id == wid for supply_w_id in supply_w_ids)
         o_all_local = 1 if all_local else 0
         cur.execute(
@@ -134,8 +137,8 @@ def new_order (conn, cid, wid, did, num_items, items):
         for ol in ordered_items:
             print(*ol, sep=", ")
 
-    logging.debug("new_order(): status message: %s", cur.statusmessage)
     conn.commit()
+    logging.debug("new_order(): status message: %s", cur.statusmessage)
 
 
 # def main():

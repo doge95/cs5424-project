@@ -1,10 +1,7 @@
 # This transaction queries the status of the last order of a customer. 
 # Input: Customer identifier (C_W_ID, C_D_ID, C_ID)
 
-from read_script import *
 import logging
-import psycopg2
-from psycopg2.errors import SerializationFailure
 
 def order_status (conn, cwid, cdid, cid):
     with conn.cursor() as cur:
@@ -38,12 +35,12 @@ def order_status (conn, cwid, cdid, cid):
         for order_line in order_lines:
             print(*order_line, sep=", ")
     
-    logging.debug("order_status(): status message: %s", cur.statusmessage)
     conn.commit()
+    logging.debug("order_status(): status message: %s", cur.statusmessage)
 
-def main():
-    order_status(conn, 10, 2, 2783)
-    conn.close()
+# def main():
+#     order_status(conn, 10, 2, 2783)
+#     conn.close()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

@@ -3,10 +3,7 @@
 # 1. Warehouse number W_ID
 # 2. Identifier of carrier assigned for the delivery CARRIER_ID 
 
-from read_script import *
 import logging
-import psycopg2
-from psycopg2.errors import SerializationFailure
 
 def delivery (conn, wid, carrierid):
     for did in range(1, 11):
@@ -34,12 +31,12 @@ def delivery (conn, wid, carrierid):
                 "UPDATE customer SET (C_BALANCE, C_DELIVERY_CNT) = (C_BALANCE + (SELECT SUM(OL_AMOUNT) FROM order_line WHERE OL_W_ID = %s AND OL_D_ID = %s and OL_O_ID = %s), C_DELIVERY_CNT + 1) WHERE C_ID = %s AND C_W_ID = %s AND C_D_ID = %s", (wid, did, oid, cid, wid, did)
             )
             
-        logging.debug("delivery(): status message: %s", cur.statusmessage)
         conn.commit()
+        logging.debug("delivery(): status message: %s", cur.statusmessage)
         
-def main():
-    delivery(conn, 2, 8)
-    conn.close()
+# def main():
+#     delivery(conn, 2, 8)
+#     conn.close()
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

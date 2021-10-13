@@ -4,33 +4,27 @@
 # 2. Payment amount PAYMENT 
 
 # When executing UPDATE statements from an application, make sure that you wrap the SQL-executing functions in a retry loop that handles transaction errors that can occur under contention.
-
-from read_script import *
 import logging
-import psycopg2
-from psycopg2.errors import SerializationFailure
 
 def payment (conn, cwid, cdid, cid, payment):
     with conn.cursor() as cur:
         # # Update the warehouse by incrementing W_YTD by PAYMENT
-        # cur.execute(
-        #     "UPDATE warehouse SET W_YTD = W_YTD + %s WHERE W_ID = %s", (payment, cwid)
-        # )
+        cur.execute(
+            "UPDATE warehouse SET W_YTD = W_YTD + %s WHERE W_ID = %s", (payment, cwid)
+        )
 
         # # Update the district by incrementing D_YTD by PAYMENT
-        # cur.execute(
-        #     "UPDATE district SET D_YTD = D_YTD + %s WHERE D_W_ID = %s AND D_ID = %s", (payment, cwid, cdid)
-        # )
+        cur.execute(
+            "UPDATE district SET D_YTD = D_YTD + %s WHERE D_W_ID = %s AND D_ID = %s", (payment, cwid, cdid)
+        )
 
         # # Update customer
         # # Decrement C_BALANCE by PAYMENT
         # # Increment C_YTD PAYMENT by PAYMENT
         # # Increment C_PAYMENT CNT by 1
-        # cur.execute(
-        #     "UPDATE customer SET (C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT) = (C_BALANCE - %s, C_YTD_PAYMENT + %s, C_PAYMENT_CNT + 1) WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (payment, payment, cwid, cdid, cid)
-        # )
-        # # try catch? rollback?
-        # conn.commit()
+        cur.execute(
+            "UPDATE customer SET (C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT) = (C_BALANCE - %s, C_YTD_PAYMENT + %s, C_PAYMENT_CNT + 1) WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (payment, payment, cwid, cdid, cid)
+        )
     
         # Output customer
         cur.execute(
@@ -58,9 +52,8 @@ def payment (conn, cwid, cdid, cid, payment):
         district_address = cur.fetchone()
         print("District Address:", *district_address)
         
-        # logging first or commit first?
-    logging.debug("payment(): status message: %s", cur.statusmessage)
     conn.commit()
+    logging.debug("payment(): status message: %s", cur.statusmessage)
 
 # def main():
 #     payment(conn, 2, 2, 307, 0)
