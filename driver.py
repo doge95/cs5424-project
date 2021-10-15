@@ -136,7 +136,7 @@ for i in range(1):
             logging.debug("Exception: %s", e)
             continue
 
-    client_throughput = round(num_of_trxn / total_trxn_time, 2)
+    client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
     throughput_for_all.append(client_throughput)
     trxn_latency_ndarr_dist = np.array(trxn_latency_lst)
     client_performance_record = [
