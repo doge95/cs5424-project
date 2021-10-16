@@ -7,7 +7,6 @@ HOME_DIR="/home/stuproj/cs4224h"
 MAIN_SERVER="xcnd45"
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
 PORT="26278"
-# Shared storage among servers
 PROJECT_DATA_DIR="$HOME_DIR/project_files_4/data_files"
 COCKROACH_DATA_DIR="$HOME_DIR/cockroach_data_files"
 COCKROACH="/temp/cs4224h/cockroach-v21.1.7.linux-amd64/cockroach"
@@ -22,6 +21,12 @@ prepare_files () {
     split -l 60000 "$PROJECT_DATA_DIR/order.csv" "$COCKROACH_DATA_DIR/order"
     split -l 750000 "$PROJECT_DATA_DIR/order-line.csv" "$COCKROACH_DATA_DIR/orderline"
     split -l 200000 "$PROJECT_DATA_DIR/stock.csv" "$COCKROACH_DATA_DIR/stock"
+}
+
+copy_files () {
+    for server in $SERVERS; do 
+        ssh -q $USER@$server "if [ ! -d $COCKROACH_DATA_DIR ]; then mkdir -p $COCKROACH_DATA_DIR; scp $USER@$MAIN_SERVER:$COCKROACH_DATA_DIR/* $COCKROACH_DATA_DIR; fi; if [ ! -d $PROJECT_DATA_DIR ]; then mkdir -p $PROJECT_DATA_DIR; scp $USER@$MAIN_SERVER:$PROJECT_DATA_DIR/* $PROJECT_DATA_DIR; fi"
+    done
 }
 
 start_file_servers () {
@@ -239,6 +244,11 @@ if [ ! -f "$COCKROACH_DATA_DIR/district.csv" ]; then
     echo Done
 fi
 
+# Copy files to other four nodes
+echo "Copying files to other nodes..."
+copy_files
+echo Done
+
 # Check database & tables
 echo "Checking database & tables..."
 check_db
@@ -247,15 +257,14 @@ check_db
 if grep -q 'database "wholesale" does not exist' "$QUERY_OUTPUT"; then
     echo "Creating database..."
     create_database
-else
-    # If wholesale database exits, import data into the database
-    echo "Open python file server on each node..."
-    start_file_servers
-
-    echo "Import data into database..."
-    import_data
-
-    echo "Stop python file server on each node..."
-    stop_file_servers
-
 fi
+
+# If wholesale database exits, import data into the database
+echo "Open python file server on each node..."
+start_file_servers
+
+echo "Import data into database..."
+import_data
+
+echo "Stop python file server on each node..."
+stop_file_servers

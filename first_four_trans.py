@@ -1,14 +1,5 @@
-# This transaction processes a new order from a customer.
-# Inputs:
-# 1. Customer identifier (W ID, D ID, C ID)
-# 2. Number of items to be ordered NUM ITEMS, NUM ITEMS ≤ 20
-# 3. ITEM NUMBER[i] = Item number for ith item, i ∈ [1,NUM ITEMS]
-# 4. SUPPLIER WAREHOUSE[i] = Supplier warehouse for ith item, i ∈ [1,NUM ITEMS] 
-# 5. QUANTITY[i] = Quantity ordered for ith item, i ∈ [1,NUM ITEMS]
-
 import logging
 from psycopg2 import sql
-
 
 def new_order (conn, cid, wid, did, num_items, items):
     with conn.cursor() as cur:
@@ -140,11 +131,115 @@ def new_order (conn, cid, wid, did, num_items, items):
     conn.commit()
     logging.debug("new_order(): status message: %s", cur.statusmessage)
 
+def payment (conn, cwid, cdid, cid, payment):
+    with conn.cursor() as cur:
+        # # Update the warehouse by incrementing W_YTD by PAYMENT
+        cur.execute(
+            "UPDATE warehouse SET W_YTD = W_YTD + %s WHERE W_ID = %s", (payment, cwid)
+        )
 
-# def main():
-#     items = [[63203,3,4], [64033,3,4], [76455,3,2]]
-#     new_order(conn, 190, 3, 1, 3, items)
-#     conn.close()
+        # # Update the district by incrementing D_YTD by PAYMENT
+        cur.execute(
+            "UPDATE district SET D_YTD = D_YTD + %s WHERE D_W_ID = %s AND D_ID = %s", (payment, cwid, cdid)
+        )
 
-# if __name__ == "__main__":
-#     main()
+        # # Update customer
+        # # Decrement C_BALANCE by PAYMENT
+        # # Increment C_YTD PAYMENT by PAYMENT
+        # # Increment C_PAYMENT CNT by 1
+        cur.execute(
+            "UPDATE customer SET (C_BALANCE, C_YTD_PAYMENT, C_PAYMENT_CNT) = (C_BALANCE - %s, C_YTD_PAYMENT + %s, C_PAYMENT_CNT + 1) WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (payment, payment, cwid, cdid, cid)
+        )
+    
+        # Output customer
+        cur.execute(
+            "SELECT C_W_ID, C_D_ID, C_ID, C_FIRST, C_MIDDLE, C_LAST, C_STREET_1, C_STREET_2, C_CITY, C_STATE, C_ZIP, C_PHONE, C_SINCE, C_CREDIT, C_CREDIT_LIM, C_DISCOUNT, C_BALANCE FROM customer WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (cwid, cdid, cid)
+        )
+        customer = cur.fetchone()
+        customer_id = customer[:3]
+        customer_name = customer[3:6]
+        customer_address = customer[6:11]
+        customer_info = customer[11:]
+        print("Customer Identifier, Name, Address, Phone, Since, Credit, Credit Limit, Discount, Balance")
+        print(customer_id, customer_name, customer_address, *customer_info, sep=", ")
+
+        # Output warehouse 
+        cur.execute(
+            "SELECT W_STREET_1, W_STREET_2, W_CITY, W_STATE, W_ZIP FROM warehouse WHERE W_ID = %s", (cwid,)
+        )
+        warehouse_address = cur.fetchone()
+        print("Warehouse Address:", *warehouse_address)
+
+        # Output district 
+        cur.execute(
+            "SELECT D_STREET_1, D_STREET_2, D_CITY, D_STATE, D_ZIP FROM district WHERE D_ID = %s", (cdid,)
+        )
+        district_address = cur.fetchone()
+        print("District Address:", *district_address)
+        
+    conn.commit()
+    logging.debug("payment(): status message: %s", cur.statusmessage)
+
+def delivery (conn, wid, carrierid):
+    for did in range(1, 11):
+        with conn.cursor() as cur:
+            # Retrieve the smallest order number O_ID for district with O_CARRIER_ID = null
+            cur.execute(
+                "SELECT O_ID, O_C_ID FROM orders WHERE O_W_ID = %s AND O_D_ID = %s AND O_CARRIER_ID IS NULL order by O_ID ASC LIMIT 1", (wid, did)
+            )
+            oid, cid = cur.fetchone()
+
+            # Update the order X by setting O_CARRIER_ID to CARRIER_ID
+            cur.execute(
+                "UPDATE orders SET O_CARRIER_ID = %s WHERE O_ID = %s AND O_W_ID = %s AND O_D_ID = %s", (carrierid, oid, wid, did)
+            )
+
+            # Update all the order-lines in X by setting OL_DELIVERY_D to the current date and time
+            cur.execute(
+                "UPDATE order_line SET OL_DELIVERY_D = current_timestamp() WHERE OL_W_ID = %s AND OL_D_ID = %s AND OL_O_ID = %s", (wid, did, oid)
+            )
+
+            # Update customer C
+            # Increment C_BALANCE by B, where B denote the sum of OL_AMOUNT for all the items placed in order X
+            # Increment C_DELIVERY_CNT by 1
+            cur.execute(
+                "UPDATE customer SET (C_BALANCE, C_DELIVERY_CNT) = (C_BALANCE + (SELECT SUM(OL_AMOUNT) FROM order_line WHERE OL_W_ID = %s AND OL_D_ID = %s and OL_O_ID = %s), C_DELIVERY_CNT + 1) WHERE C_ID = %s AND C_W_ID = %s AND C_D_ID = %s", (wid, did, oid, cid, wid, did)
+            )
+            
+        conn.commit()
+        logging.debug("delivery(): status message: %s", cur.statusmessage)
+
+def order_status (conn, cwid, cdid, cid):
+    with conn.cursor() as cur:
+        # Output Customer’s name (C_FIRST, C_MIDDLE, C_LAST), balance C_BALANCE
+        cur.execute(
+            "SELECT C_FIRST, C_MIDDLE, C_LAST, C_BALANCE FROM customer WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (cwid, cdid, cid)
+        )
+        # logging.debug("order_status(): status message: %s", cur.statusmessage)
+        customer_info = cur.fetchone()
+        customer_name = customer_info[:3]
+        balance = customer_info[3]
+        print("Customer Name, Balance")
+        print(customer_name, balance, sep=", ")
+
+        # Output Order number O_ID, Entry date and time O_ENTRY_D, Carrier identifier O_ CARRIER_ID
+        cur.execute(
+            "SELECT O_ID, O_ENTRY_D, O_CARRIER_ID FROM orders WHERE O_W_ID = %s AND O_D_ID = %s AND O_C_ID = %s ORDER BY O_ENTRY_D DESC LIMIT 1", (cwid, cdid, cid)
+        )
+        last_order = cur.fetchone()
+        last_order_id = last_order[0]
+
+        print("Customer Last Order Number, Entry Date and Time, Carrier Identifier")
+        print(*last_order, sep=", ")
+
+        # Output Item number OL_I_ID, Supplying warehouse number OL_SUPPLY_W_ID, Quantity ordered OL_QUANTITY, Total price for ordered item OL_AMOUNT, Data and time of delivery OL_DELIVERY_D
+        cur.execute(
+            "SELECT OL_I_ID, OL_SUPPLY_W_ID, OL_QUANTITY, OL_AMOUNT, OL_DELIVERY_D FROM order_line WHERE OL_W_ID = %s AND OL_D_ID = %s AND OL_O_ID = %s", (cwid, cdid, last_order_id)
+        )
+        order_lines = cur.fetchall()
+        print("Item Number, Supplying Warehouse Number, Quantity Ordered, Total Price, Delivery Date and Time")
+        for order_line in order_lines:
+            print(*order_line, sep=", ")
+    
+    conn.commit()
+    logging.debug("order_status(): status message: %s", cur.statusmessage)

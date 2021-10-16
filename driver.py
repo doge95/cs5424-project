@@ -2,15 +2,11 @@ import psycopg2
 import csv
 import sys
 import datetime
-from re import search
-from read_script import *
 from statistics import mean, median
 import numpy as np
 import logging
-from delivery import *
-from new_order import *
-from order_status import *
-from payment import *
+from first_four_trans import *
+from last_four_trans import *
 
 
 def process_transactions(input_params, conn):
@@ -67,9 +63,9 @@ conn = psycopg2.connect(
     database='wholesale',
     user='root',
     sslmode='verify-full',
-    sslrootcert='../certs/ca.crt',
-    sslcert='../certs/client.root.crt',
-    sslkey='../certs/client.root.key',
+    sslrootcert='/temp/cs4224h/certs/ca.crt',
+    sslcert='/temp/cs4224h/certs/client.root.crt',
+    sslkey='/temp/cs4224h/certs/client.root.key',
     port=26278,
     host=host,
     password='cs4224hadmin'
@@ -84,8 +80,7 @@ delivery_count = 0
 payment_count = 0
 order_status_count = 0
 # Get Client Number
-len_input_file = len(transaction_file)
-client_num = transaction_file[len_input_file - 6:len_input_file - 4].replace('/', '')
+client_num = transaction_file.replace('.txt', '')
 
 f = open(transaction_file, "r")
 # append each line in the file to a list
@@ -136,13 +131,6 @@ f.close()
 
 conn.close()
 
-# print("new_order_count: ", new_order_count)
-# print("delivery_count: ", delivery_count)
-# print("payment_count: ", payment_count)
-# print("order_status_count: ", order_status_count)
-
-# output_fir = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files/xact_files_A/'
-# output_fir = '/home/stuproj/cs4224h/cockroach_output/'
 
 # Export client.csv
 # print('clients_performance', clients_performance)
@@ -171,55 +159,3 @@ with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
         # ]
         throughput_data_frag
     )
-
-# Export dbstate.csv
-# i. select sum(W YTD) from Warehouse
-# ii. select sum(D YTD), sum(D NEXT O ID) from District
-# iii. select sum(C BALANCE), sum(C YTD PAYMENT), sum(C PAYMENT CNT), sum(C DELIVERY CNT)
-# from Customer
-# iv. select max(O ID), sum(O OL CNT) from Order
-# v. select sum(OL AMOUNT), sum(OL QUANTITY) from Order-Line
-# vi. select sum(S QUANTITY), sum(S YTD), sum(S ORDER CNT), sum(S REMOTE CNT) from
-# Stock
-
-# sum_from_warehouse_query = 'select sum(W_YTD) from Warehouse;'
-# data_cursor.execute(sum_from_warehouse_query)
-# (sum_W_YTD,) = data_cursor.fetchone()
-# print(sum_W_YTD)
-
-# sum_from_district_query = 'select sum(D_YTD), sum(D_NEXT_O_ID) from District;'
-# data_cursor.execute(sum_from_district_query)
-# (sum_D_YTD, sum_D_NEXT_O_ID) = data_cursor.fetchone()
-# print(sum_D_YTD, sum_D_NEXT_O_ID)
-
-# sum_from_customer_query = 'select sum(C_BALANCE), sum(C_YTD_PAYMENT), sum(C_PAYMENT_CNT), sum(C_DELIVERY_CNT) from Customer;'
-# data_cursor.execute(sum_from_customer_query)
-# (sum_C_BALANCE, sum_C_YTD_PAYMENT, sum_C_PAYMENT_CNT, sum_C_DELIVERY_CNT) = data_cursor.fetchone()
-# print(sum_C_BALANCE, sum_C_YTD_PAYMENT, sum_C_PAYMENT_CNT, sum_C_DELIVERY_CNT)
-
-# sum_from_order_query = 'select max(O_ID), sum(O_OL_CNT) from Orders;'
-# data_cursor.execute(sum_from_order_query)
-# (max_O_ID, sum_O_OL_CNT) = data_cursor.fetchone()
-# print(max_O_ID, sum_O_OL_CNT)
-
-# sum_from_order_line_query = 'select sum(OL_AMOUNT), sum(OL_QUANTITY) from Order_Line;'
-# data_cursor.execute(sum_from_order_line_query)
-# (sum_OL_AMOUNT, sum_OL_QUANTITY) = data_cursor.fetchone()
-# print(sum_OL_AMOUNT, sum_OL_QUANTITY)
-
-# sum_from_stock_query = 'select sum(S_QUANTITY), sum(S_YTD), sum(S_ORDER_CNT), sum(S_REMOTE_CNT) from Stock;'
-# data_cursor.execute(sum_from_stock_query)
-# (sum_S_QUANTITY, sum_S_YTD, sum_S_ORDER_CNT, sum_S_REMOTE_CNT) = data_cursor.fetchone()
-# print(sum_S_QUANTITY, sum_S_YTD, sum_S_ORDER_CNT, sum_S_REMOTE_CNT)
-
-# with open(output_fir + 'dbstate.csv', 'w') as csvfile:
-#     # creating a csv writer object
-#     csvwriter = csv.writer(csvfile)
-#     csvwriter.writerows([
-#         [sum_W_YTD],
-#         [sum_D_YTD], [sum_D_NEXT_O_ID],
-#         [sum_C_BALANCE], [sum_C_YTD_PAYMENT], [sum_C_PAYMENT_CNT], [sum_C_DELIVERY_CNT],
-#         [max_O_ID], [sum_O_OL_CNT],
-#         [sum_OL_AMOUNT], [sum_OL_QUANTITY],
-#         [sum_S_QUANTITY], [sum_S_YTD], [sum_S_ORDER_CNT], [sum_S_REMOTE_CNT]
-#     ])

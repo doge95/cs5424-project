@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+set x
+
+CLIENT_ENV_DIR="cockroach_client_env"
 server=`hostname -f`
 
 case $server in
@@ -20,9 +23,24 @@ case $server in
     *)              
 esac 
 
+if [ ! -d $CLIENT_ENV_DIR ]; then
+    # Create the virtual environment 
+    python3 -m venv $CLIENT_ENV_DIR
+fi
+
+# Activating the virtual environment
+source "$CLIENT_ENV_DIR/bin/activate"
+
+# Upgrade pip version
+python3 -m pip install --upgrade pip
+
+# Install required packages
+python3 -m pip install -r "./requirements.txt"
+
+# Run client program
 for c in {0..39}; do
     if [ $(($c % 5)) -eq $server_num ]; then
         # replace program with driver.py
-        echo "driver.py < $c.txt 2> ${c}_performance.txt &"
+        python3 ./driver.py $c.txt > ${c}_output.txt 2>${c}_performance.txt &
     fi
 done
