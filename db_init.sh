@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/bash
 # This script is to create database and/ or import data into database
 #set -x
 
