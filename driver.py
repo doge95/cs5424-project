@@ -96,14 +96,14 @@ trxn_latency_lst = []
 for line_num in range(len(temp_data)):
     line = temp_data[line_num]
     input_params = line.split(',')
-    print(input_params)
+    # print(input_params)
     if input_params[0] == 'N':
         num_items = int(input_params[4])
         items = []
         for i in range(line_num + 1, line_num + num_items + 1):
             items.append(temp_data[i].split(','))
         input_params.append(items)
-        print(input_params)
+        # print(input_params)
     try:
         start = datetime.datetime.now()
         process_transactions(input_params, conn)
@@ -144,7 +144,7 @@ conn.close()
 # output_fir = '/home/stuproj/cs4224h/cockroach_output/'
 
 # Export client.csv
-print('clients_performance', clients_performance)
+# print('clients_performance', clients_performance)
 
 with open(output_fir + 'clients_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
