@@ -12,24 +12,25 @@ from new_order import *
 from order_status import *
 from payment import *
 
+
 def process_transactions(input_params, conn):
     if input_params[0] == 'N':
-        new_order(conn, 
-                int(input_params[1]),
-                int(input_params[2]),
-                int(input_params[3]),
-                int(input_params[4]),
-                input_params[5],
-                )
-        
+        new_order(conn,
+                  int(input_params[1]),
+                  int(input_params[2]),
+                  int(input_params[3]),
+                  int(input_params[4]),
+                  input_params[5],
+                  )
+
     elif input_params[0] == 'P':
-        payment(conn, 
+        payment(conn,
                 int(input_params[1]),
                 int(input_params[2]),
                 int(input_params[3]),
                 float(input_params[4]),
                 )
-        
+
     elif input_params[0] == 'D':
         delivery(conn, int(input_params[1]), int(input_params[2]))
 
@@ -56,6 +57,7 @@ def process_transactions(input_params, conn):
                                          int(input_params[1]),
                                          int(input_params[2]),
                                          int(input_params[3]))
+
 
 transaction_file = sys.argv[1]
 output_fir = sys.argv[2]
@@ -84,7 +86,6 @@ order_status_count = 0
 # Get Client Number
 len_input_file = len(transaction_file)
 client_num = transaction_file[len_input_file - 6:len_input_file - 4].replace('/', '')
-
 
 f = open(transaction_file, "r")
 # append each line in the file to a list
@@ -145,21 +146,31 @@ conn.close()
 
 # Export client.csv
 # print('clients_performance', clients_performance)
-
+print(clients_performance, file=sys.stderr)
 with open(output_fir + 'clients_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
     csvwriter = csv.writer(csvfile)
     csvwriter.writerows(clients_performance)
 
 # Export throughput.csv
+
+throughput_data_frag = [[
+    min(throughput_for_all),
+    max(throughput_for_all),
+    round(mean(throughput_for_all), 2)]
+]
+print(throughput_data_frag, file=sys.stderr)
 with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
     csvwriter = csv.writer(csvfile)
-    csvwriter.writerows([[
-        min(throughput_for_all),
-        max(throughput_for_all),
-        round(mean(throughput_for_all), 2)]
-    ])
+    csvwriter.writerows(
+        #     [[
+        #     min(throughput_for_all),
+        #     max(throughput_for_all),
+        #     round(mean(throughput_for_all), 2)]
+        # ]
+        throughput_data_frag
+    )
 
 # Export dbstate.csv
 # i. select sum(W YTD) from Warehouse

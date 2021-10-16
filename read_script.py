@@ -1,4 +1,5 @@
 import psycopg2
+import sys
 
 
 # conn = psycopg2.connect(
@@ -39,6 +40,7 @@ def get_stock_level_transaction(conn, w_id, d_id, t, l):
     # print(count_items)
     # print('type: ', type(count_items))
     # print ('here')
+    print(count_items[0])
     return count_items[0]
 
 
@@ -46,7 +48,6 @@ def get_stock_level_transaction(conn, w_id, d_id, t, l):
 
 
 # 6
-# TODO: Compelete the logic
 def get_popular_items_transaction(conn, w_id, d_id, l):
     data_cursor = conn.cursor()
 
@@ -96,7 +97,7 @@ def get_popular_items_transaction(conn, w_id, d_id, l):
                                              "on ol_i_id=i_id " \
                                              "where ol_w_id={} and ol_d_id={} and ol_o_id in {} and ol_i_id in {} " \
                                              "group by i_name;".format(l, w_id, d_id, in_scope_o_ids,
-                                                                        unique_popular_item_ids)
+                                                                       unique_popular_item_ids)
 
     data_cursor.execute(get_all_items_per_selected_order_query)
     popular_items_percentage = data_cursor.fetchall()
@@ -131,6 +132,7 @@ def get_popular_items_transaction(conn, w_id, d_id, l):
         'orders': orders,
         'percentages': percentages
     }
+    print(results)
     return results
 
 
@@ -163,6 +165,7 @@ def get_top_balance_transaction(conn):
             'd_name': d_name,
         })
 
+    print(results)
     return results
 
 
@@ -219,11 +222,13 @@ def get_related_customer_transaction(conn, c_w_id, c_d_id, c_id):
             'c_id': c_id,
         })
     # print (orders_with_similar_items)
-    return {
+    results = {
         "c_w_id": c_w_id,
         "c_d_id": c_d_id,
         "c_id": c_id,
         "related_custs": related_custs
     }
+    print(results)
+    return results
 
 # get_related_customer_transaction("R", 1, 9, 1658)
