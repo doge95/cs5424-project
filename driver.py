@@ -71,7 +71,7 @@ conn = psycopg2.connect(
     password='cs4224hadmin'
 )
 
-# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files_4/xact_files_A/0.txt'
+# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files_4/xact_files_A/40.txt'
 throughput_for_all = []
 clients_performance = []
 
@@ -80,7 +80,8 @@ delivery_count = 0
 payment_count = 0
 order_status_count = 0
 # Get Client Number
-client_num = transaction_file.replace('.txt', '')
+char_position=transaction_file.rfind('.txt')
+client_num = transaction_file[char_position - 2:char_position].replace('/', '')
 
 f = open(transaction_file, "r")
 # append each line in the file to a list
