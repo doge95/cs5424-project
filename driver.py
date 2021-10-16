@@ -1,6 +1,5 @@
 import psycopg2
 import csv
-import os
 import sys
 import datetime
 from re import search
@@ -13,8 +12,6 @@ from new_order import *
 from order_status import *
 from payment import *
 
-# from DBConnection import DBConnection
-
 def process_transactions(input_params, conn):
     if input_params[0] == 'N':
         new_order(conn, 
@@ -24,8 +21,7 @@ def process_transactions(input_params, conn):
                 int(input_params[4]),
                 input_params[5],
                 )
-        global new_order_count
-        new_order_count += 1
+        
     elif input_params[0] == 'P':
         payment(conn, 
                 int(input_params[1]),
@@ -33,18 +29,12 @@ def process_transactions(input_params, conn):
                 int(input_params[3]),
                 float(input_params[4]),
                 )
-        global payment_count
-        payment_count += 1
         
     elif input_params[0] == 'D':
         delivery(conn, int(input_params[1]), int(input_params[2]))
-        global delivery_count
-        delivery_count += 1
 
     elif input_params[0] == 'O':
         order_status(conn, int(input_params[1]), int(input_params[2]), int(input_params[3]))
-        global order_status_count
-        order_status_count += 1
 
     elif input_params[0] == 'S':
         get_stock_level_transaction(conn,
@@ -69,6 +59,7 @@ def process_transactions(input_params, conn):
 
 transaction_file = sys.argv[1]
 output_fir = sys.argv[2]
+host = sys.argv[3]
 
 conn = psycopg2.connect(
     database='wholesale',
@@ -78,16 +69,11 @@ conn = psycopg2.connect(
     sslcert='../certs/client.root.crt',
     sslkey='../certs/client.root.key',
     port=26278,
-    host='xcnd45.comp.nus.edu.sg',
+    host=host,
     password='cs4224hadmin'
 )
 
-# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files/xact_files_A/0.txt'
-# list_of_files = os.listdir(transaction_file)
-lines = []
-count = 0
-# data_cursor = conn.cursor()
-
+# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files_4/xact_files_A/0.txt'
 throughput_for_all = []
 clients_performance = []
 
@@ -99,62 +85,53 @@ order_status_count = 0
 len_input_file = len(transaction_file)
 client_num = transaction_file[len_input_file - 6:len_input_file - 4].replace('/', '')
 
-# no need for production, prof's shell script will do
-# for file in list_of_files:
-for i in range(1):
-    # f = open(transaction_file + file, "r")
-    f = open(transaction_file, "r")
-    # append each line in the file to a list
-    temp_data = f.read().splitlines()
 
-    num_of_trxn = 0
-    total_trxn_time = 0
-    trxn_latency_lst = []
-    for line_num in range(len(temp_data)):
-        line = temp_data[line_num]
-        input_params = line.split(',')
+f = open(transaction_file, "r")
+# append each line in the file to a list
+temp_data = f.read().splitlines()
+num_of_trxn = 0
+total_trxn_time = 0
+trxn_latency_lst = []
+
+for line_num in range(len(temp_data)):
+    line = temp_data[line_num]
+    input_params = line.split(',')
+    print(input_params)
+    if input_params[0] == 'N':
+        num_items = int(input_params[4])
+        items = []
+        for i in range(line_num + 1, line_num + num_items + 1):
+            items.append(temp_data[i].split(','))
+        input_params.append(items)
         print(input_params)
+    try:
+        start = datetime.datetime.now()
+        process_transactions(input_params, conn)
+        time_diff = (datetime.datetime.now() - start).total_seconds()
+        total_trxn_time += total_trxn_time + time_diff
+        trxn_latency_lst.append(time_diff * 1000)
+        num_of_trxn = num_of_trxn + 1
+    except psycopg2.Error as e:
+        conn.rollback()
+        logging.debug("Exception: %s", e)
+        continue
 
-        if input_params[0] == 'N':
-            num_items = int(input_params[4])
-            items = []
-            for i in range(line_num + 1, line_num + num_items + 1):
-                items.append(temp_data[i].split(','))
-            input_params.append(items)
-            print(input_params)
-
-        try:
-            start = datetime.datetime.now()
-            process_transactions(input_params, conn)
-            time_diff = (datetime.datetime.now() - start).total_seconds()
-            total_trxn_time += total_trxn_time + time_diff
-            trxn_latency_lst.append(time_diff * 1000)
-            num_of_trxn = num_of_trxn + 1
-
-        except psycopg2.Error as e:
-            conn.rollback()
-            logging.debug("Exception: %s", e)
-            continue
-
-    client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
-    throughput_for_all.append(client_throughput)
-    trxn_latency_ndarr_dist = np.array(trxn_latency_lst)
-    client_performance_record = [
-        client_num,
-        num_of_trxn,
-        round(total_trxn_time, 2),
-        client_throughput,
-        round(mean(trxn_latency_lst), 2),
-        round(median(trxn_latency_lst), 2),
-        round(np.percentile(trxn_latency_ndarr_dist, 95), 2),
-        round(np.percentile(trxn_latency_ndarr_dist, 99), 2)
-    ]
-    # print('This is file ', file, client_performance_record)
-    clients_performance.append(client_performance_record)
-
-    count += len(temp_data)
-    lines.extend(temp_data)
-    f.close()
+client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
+throughput_for_all.append(client_throughput)
+trxn_latency_ndarr_dist = np.array(trxn_latency_lst)
+client_performance_record = [
+    client_num,
+    num_of_trxn,
+    round(total_trxn_time, 2),
+    client_throughput,
+    round(mean(trxn_latency_lst), 2),
+    round(median(trxn_latency_lst), 2),
+    round(np.percentile(trxn_latency_ndarr_dist, 95), 2),
+    round(np.percentile(trxn_latency_ndarr_dist, 99), 2)
+]
+# print('This is file ', file, client_performance_record)
+clients_performance.append(client_performance_record)
+f.close()
 
 conn.close()
 

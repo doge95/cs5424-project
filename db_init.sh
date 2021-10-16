@@ -7,7 +7,7 @@ HOME_DIR="/home/stuproj/cs4224h"
 MAIN_SERVER="xcnd45"
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
 PORT="26278"
-# Share storage among servers
+# Shared storage among servers
 PROJECT_DATA_DIR="$HOME_DIR/project_files_4/data_files"
 COCKROACH_DATA_DIR="$HOME_DIR/cockroach_data_files"
 COCKROACH="/temp/cs4224h/cockroach-v21.1.7.linux-amd64/cockroach"
