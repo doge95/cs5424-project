@@ -126,10 +126,15 @@ def get_popular_items_transaction(conn, w_id, d_id, l):
 def get_top_balance_transaction(conn):
     data_cursor = conn.cursor()
 
-    get_top_ten_customers = "select c_first, c_middle, c_last, c_balance, w_name, d_name from customer " \
-                            "join district on c_d_id = d_id " \
-                            "join warehouse on c_w_id = w_id " \
-                            "order by c_balance desc limit 10;"
+    # get_top_ten_customers = "select c_first, c_middle, c_last, c_balance, w_name, d_name from customer " \
+    #                         "join district on c_d_id = d_id " \
+    #                         "join warehouse on c_w_id = w_id " \
+    #                         "order by c_balance desc limit 10;"
+
+    get_top_ten_customers = "select c_first, c_middle, c_last, c_balance, w_name, d_name from " \
+                            "(select c_first, c_middle, c_last, c_balance, c_d_id, c_w_id from customer order by c_balance desc limit 10)  " \
+                            "join district on c_d_id = d_id and d_w_id = c_w_id " \
+                            "join warehouse on c_w_id = w_id;"
 
     data_cursor.execute(get_top_ten_customers)
     selected_customers_info = data_cursor.fetchall()
