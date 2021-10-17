@@ -192,7 +192,7 @@ def get_related_customer_transaction(conn, c_w_id, c_d_id, c_id):
                                      " on ol_w_id=o_w_id and ol_d_id=o_d_id and ol_o_id=o_id ".format(c_w_id, c_d_id,
                                                                                                       c_id)
 
-    get_overlap_items = "EXPLAIN select selected.ol_w_id, selected.ol_d_id, selected.ol_o_id, selected.o_c_id, count(distinct selected.ol_i_id) as count_items from ({}) selected " \
+    get_overlap_items = "select selected.ol_w_id, selected.ol_d_id, selected.ol_o_id, selected.o_c_id, count(distinct selected.ol_i_id) as count_items from ({}) selected " \
                         "inner join ({}) base on base.ol_i_id=selected.ol_i_id " \
                         "group by " \
                         "selected.ol_w_id, selected.ol_d_id, selected.ol_o_id, selected.o_c_id " \
@@ -220,3 +220,15 @@ def get_related_customer_transaction(conn, c_w_id, c_d_id, c_id):
     return results
 
 # get_related_customer_transaction("R", 1, 9, 1658)
+
+# conn = psycopg2.connect(
+#     database='wholesale',
+#     user='root',
+#     sslmode='verify-full',
+#     sslrootcert='../certs/ca.crt',
+#     sslcert='../certs/client.root.crt',
+#     sslkey='../certs/client.root.key',
+#     port=26278,
+#     host='xcnd45.comp.nus.edu.sg',
+#     password='cs4224hadmin'
+# )
