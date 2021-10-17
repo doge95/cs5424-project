@@ -102,7 +102,6 @@ def new_order (conn, cid, wid, did, num_items, items):
         customer = cur.fetchone()
         customer_id = customer[:3]
         customer_info = customer[3:]
-        print("NEW ORDER")
         print("Customer Identifier, Last Name, Credit, Discount")
         print(customer_id, *customer_info, cdisct, sep=", ")
 
