@@ -11,6 +11,7 @@ from last_four_trans import *
 
 def process_transactions(input_params, conn):
     if input_params[0] == 'N':
+        print("New Order ", input_params)
         new_order(conn,
                   int(input_params[1]),
                   int(input_params[2]),
@@ -20,6 +21,7 @@ def process_transactions(input_params, conn):
                   )
 
     elif input_params[0] == 'P':
+        print("Payment ", input_params)
         payment(conn,
                 int(input_params[1]),
                 int(input_params[2]),
@@ -28,12 +30,15 @@ def process_transactions(input_params, conn):
                 )
 
     elif input_params[0] == 'D':
+        print("Delivery ", input_params)
         delivery(conn, int(input_params[1]), int(input_params[2]))
 
     elif input_params[0] == 'O':
+        print("Order Status ", input_params)
         order_status(conn, int(input_params[1]), int(input_params[2]), int(input_params[3]))
 
     elif input_params[0] == 'S':
+        print("Stock Level ", input_params)
         get_stock_level_transaction(conn,
                                     int(input_params[1]),
                                     int(input_params[2]),
@@ -41,14 +46,18 @@ def process_transactions(input_params, conn):
                                     int(input_params[4]),
                                     )
     elif input_params[0] == 'I':
+        print("Popular Item ", input_params)
         get_popular_items_transaction(conn,
                                       int(input_params[1]),
                                       int(input_params[2]),
                                       int(input_params[3])
                                       )
     elif input_params[0] == 'T':
+        print("Top Balance ", input_params)
         get_top_balance_transaction(conn)
+
     elif input_params[0] == 'R':
+        print("Related Customer ", input_params)
         get_related_customer_transaction(conn,
                                          int(input_params[1]),
                                          int(input_params[2]),
@@ -66,12 +75,15 @@ conn = psycopg2.connect(
     sslrootcert='/temp/cs4224h/certs/ca.crt',
     sslcert='/temp/cs4224h/certs/client.root.crt',
     sslkey='/temp/cs4224h/certs/client.root.key',
+    # sslrootcert='../certs/ca.crt',
+    # sslcert='../certs/client.root.crt',
+    # sslkey='../certs/client.root.key',
     port=26278,
     host=host,
     password='cs4224hadmin'
 )
 
-# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files_4/xact_files_A/40.txt'
+# transaction_file = '/Users/ruiyan/Desktop/MSc/SEM1AY2021:2022/CS5424DD/project/project_files_4/xact_files_A/0.txt'
 throughput_for_all = []
 clients_performance = []
 
