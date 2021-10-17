@@ -16,7 +16,7 @@ for server in $SERVERS; do
         echo "Copy cockroach client driver codes to $server ..."
         scp -r $HOME_DIR/cockroach_driver $USER@$server:$HOME_DIR
         echo "Run cockroach client program on $server ..."
-        ssh -q $USER@$server "$DRIVER_DIR/client_exec.sh"
+        ssh -q $USER@$server "$DRIVER_DIR/client_exec.sh &"
         
     fi
 done

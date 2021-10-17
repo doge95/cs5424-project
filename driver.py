@@ -112,6 +112,10 @@ for line_num in range(len(temp_data)):
         conn.rollback()
         logging.debug("Exception: %s", e)
         continue
+    except Exception as e:
+        conn.rollback()
+        logging.debug("General Exception: %s", e)
+        continue
 
 client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
 throughput_for_all.append(client_throughput)

@@ -8,21 +8,21 @@ OUTPUT_DIR="$HOME_DIR/cockroach_output"
 CLIENT_ENV_DIR="$HOME_DIR/cockroach_client_env"
 DRIVER_DIR="$HOME_DIR/cockroach_driver"
 
-server=`hostname -f`
+server=`hostname -s`
 case $server in
-	xcnd45.comp.nus.edu.sg)
+	xcnd45)
 		server_num=0
 		;;
-	xcnd46.comp.nus.edu.sg)
+	xcnd46)
 		server_num=1
 		;;
-	xcnd47.comp.nus.edu.sg)
+	xcnd47)
 		server_num=2
 		;; 
-	xcnd48.comp.nus.edu.sg)
+	xcnd48)
 		server_num=3
 		;; 
-	xcnd49.comp.nus.edu.sg)
+	xcnd49)
 		server_num=4
 		;; 
     *)              
