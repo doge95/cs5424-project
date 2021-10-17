@@ -75,10 +75,6 @@ conn = psycopg2.connect(
 throughput_for_all = []
 clients_performance = []
 
-new_order_count = 0
-delivery_count = 0
-payment_count = 0
-order_status_count = 0
 # Get Client Number
 char_position=transaction_file.rfind('.txt')
 client_num = transaction_file[char_position - 2:char_position].replace('/', '')

@@ -16,7 +16,6 @@ def new_order (conn, cid, wid, did, num_items, items):
 
         # Create a new order
         # O_ALL_LOCAL = 0 if there exists some i∈[1,NUM ITEMS] such that SUPPLIER_WAREHOUSE[i] ̸= W_ID; otherwise, O_ALL_LOCAL = 1
-        print(items)
         item_nums_str, supply_w_ids_str, quantities_str = list(zip(*items))
         item_nums = [int(x) for x in item_nums_str]
         supply_w_ids = [int(x) for x in supply_w_ids_str]
@@ -103,6 +102,7 @@ def new_order (conn, cid, wid, did, num_items, items):
         customer = cur.fetchone()
         customer_id = customer[:3]
         customer_info = customer[3:]
+        print("NEW ORDER")
         print("Customer Identifier, Last Name, Credit, Discount")
         print(customer_id, *customer_info, cdisct, sep=", ")
 
