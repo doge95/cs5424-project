@@ -72,12 +72,12 @@ conn = psycopg2.connect(
     database='wholesale',
     user='root',
     sslmode='verify-full',
-    sslrootcert='/temp/cs4224h/certs/ca.crt',
-    sslcert='/temp/cs4224h/certs/client.root.crt',
-    sslkey='/temp/cs4224h/certs/client.root.key',
-    # sslrootcert='../certs/ca.crt',
-    # sslcert='../certs/client.root.crt',
-    # sslkey='../certs/client.root.key',
+    # sslrootcert='/temp/cs4224h/certs/ca.crt',
+    # sslcert='/temp/cs4224h/certs/client.root.crt',
+    # sslkey='/temp/cs4224h/certs/client.root.key',
+    sslrootcert='../certs/ca.crt',
+    sslcert='../certs/client.root.crt',
+    sslkey='../certs/client.root.key',
     port=26278,
     host=host,
     password='cs4224hadmin'
@@ -91,39 +91,45 @@ clients_performance = []
 char_position=transaction_file.rfind('.txt')
 client_num = transaction_file[char_position - 2:char_position].replace('/', '')
 
-f = open(transaction_file, "r")
-# append each line in the file to a list
-temp_data = f.read().splitlines()
-num_of_trxn = 0
-total_trxn_time = 0
-trxn_latency_lst = []
+try: 
+    f = open(transaction_file, "r")
+    # append each line in the file to a list
+    temp_data = f.read().splitlines()
+    num_of_trxn = 0
+    total_trxn_time = 0
+    trxn_latency_lst = []
 
-for line_num in range(len(temp_data)):
-    line = temp_data[line_num]
-    input_params = line.split(',')
-    # print(input_params)
-    if input_params[0] == 'N':
-        num_items = int(input_params[4])
-        items = []
-        for i in range(line_num + 1, line_num + num_items + 1):
-            items.append(temp_data[i].split(','))
-        input_params.append(items)
+    for line_num in range(len(temp_data)):
+        line = temp_data[line_num]
+        input_params = line.split(',')
         # print(input_params)
-    try:
-        start = datetime.datetime.now()
-        process_transactions(input_params, conn)
-        time_diff = (datetime.datetime.now() - start).total_seconds()
-        total_trxn_time += total_trxn_time + time_diff
-        trxn_latency_lst.append(time_diff * 1000)
-        num_of_trxn = num_of_trxn + 1
-    except psycopg2.Error as e:
-        conn.rollback()
-        logging.debug("Exception: %s", e)
-        continue
-    except Exception as e:
-        conn.rollback()
-        logging.debug("General Exception: %s", e)
-        continue
+        if input_params[0] == 'N':
+            num_items = int(input_params[4])
+            items = []
+            for i in range(line_num + 1, line_num + num_items + 1):
+                items.append(temp_data[i].split(','))
+            input_params.append(items)
+            # print(input_params)
+        try:
+            start = datetime.datetime.now()
+            process_transactions(input_params, conn)
+            time_diff = (datetime.datetime.now() - start).total_seconds()
+            total_trxn_time += total_trxn_time + time_diff
+            trxn_latency_lst.append(time_diff * 1000)
+            num_of_trxn = num_of_trxn + 1
+        except psycopg2.Error as e:
+            conn.rollback()
+            logging.debug("Exception: %s", e)
+            continue
+        except Exception as e:
+            conn.rollback()
+            logging.debug("General Exception: %s", e)
+            continue
+except Exception as e:  
+    logging.debug("General Exception: %s", e)
+finally:
+    f.close()
+    conn.close()
 
 client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
 throughput_for_all.append(client_throughput)
@@ -140,10 +146,6 @@ client_performance_record = [
 ]
 # print('This is file ', file, client_performance_record)
 clients_performance.append(client_performance_record)
-f.close()
-
-conn.close()
-
 
 # Export client.csv
 # print('clients_performance', clients_performance)
