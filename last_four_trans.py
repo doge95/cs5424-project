@@ -1,4 +1,3 @@
-import logging
 # 5.
 def get_stock_level_transaction(conn, w_id, d_id, t, l):
     data_cursor = conn.cursor()
@@ -22,8 +21,7 @@ def get_stock_level_transaction(conn, w_id, d_id, t, l):
     count_items = data_cursor.fetchone()
 
     conn.commit()
-    logging.debug("get_stock_level_transaction(): status message: %s", data_cursor.statusmessage)
-    
+
     # print(count_items)
     # print('type: ', type(count_items))
     # print ('here')
@@ -121,8 +119,6 @@ def get_popular_items_transaction(conn, w_id, d_id, l):
         'percentages': percentages
     }
     print(results)
-    logging.debug("get_popular_items_transaction(): status message: %s", data_cursor.statusmessage)
-
     return results
 
 
@@ -161,8 +157,6 @@ def get_top_balance_transaction(conn):
             'w_name': w_name,
             'd_name': d_name,
         })
-
-    logging.debug("get_top_balance_transaction(): status message: %s", data_cursor.statusmessage)
 
     print(results)
     return results
@@ -213,7 +207,7 @@ def get_related_customer_transaction(conn, c_w_id, c_d_id, c_id):
     data_cursor.execute(get_overlap_items)
     orders_with_similar_items = data_cursor.fetchall()  # o_w_id, o_d_id, o_id, o_c_id
     conn.commit()
-    
+
     related_custs = []
     for record in orders_with_similar_items:
         c_w_id, c_d_id, o_id, c_id, count = record
@@ -230,8 +224,6 @@ def get_related_customer_transaction(conn, c_w_id, c_d_id, c_id):
         "related_custs": related_custs
     }
     
-    logging.debug("get_related_customer_transaction(): status message: %s", data_cursor.statusmessage)
-
     print(results)
     return results
 

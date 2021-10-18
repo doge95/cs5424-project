@@ -1,4 +1,3 @@
-import logging
 from psycopg2 import sql
 
 def new_order (conn, cid, wid, did, num_items, items):
@@ -128,7 +127,6 @@ def new_order (conn, cid, wid, did, num_items, items):
             print(*ol, sep=", ")
 
     conn.commit()
-    logging.debug("new_order(): status message: %s", cur.statusmessage)
 
 def payment (conn, cwid, cdid, cid, payment):
     with conn.cursor() as cur:
@@ -177,7 +175,6 @@ def payment (conn, cwid, cdid, cid, payment):
         print("District Address:", *district_address)
         
     conn.commit()
-    logging.debug("payment(): status message: %s", cur.statusmessage)
 
 def delivery (conn, wid, carrierid):
     for did in range(1, 11):
@@ -206,7 +203,6 @@ def delivery (conn, wid, carrierid):
             )
             
         conn.commit()
-        logging.debug("delivery(): status message: %s", cur.statusmessage)
 
 def order_status (conn, cwid, cdid, cid):
     with conn.cursor() as cur:
@@ -214,7 +210,7 @@ def order_status (conn, cwid, cdid, cid):
         cur.execute(
             "SELECT C_FIRST, C_MIDDLE, C_LAST, C_BALANCE FROM customer WHERE C_W_ID = %s AND C_D_ID = %s AND C_ID = %s", (cwid, cdid, cid)
         )
-        # logging.debug("order_status(): status message: %s", cur.statusmessage)
+        # print("order_status(): status message: %s", cur.statusmessage)
         customer_info = cur.fetchone()
         customer_name = customer_info[:3]
         balance = customer_info[3]
@@ -241,4 +237,3 @@ def order_status (conn, cwid, cdid, cid):
             print(*order_line, sep=", ")
     
     conn.commit()
-    logging.debug("order_status(): status message: %s", cur.statusmessage)

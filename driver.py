@@ -4,7 +4,6 @@ import sys
 import datetime
 from statistics import mean, median
 import numpy as np
-import logging
 from first_four_trans import *
 from last_four_trans import *
 
@@ -102,32 +101,35 @@ try:
     for line_num in range(len(temp_data)):
         line = temp_data[line_num]
         input_params = line.split(',')
-        # print(input_params)
+
         if input_params[0] == 'N':
             num_items = int(input_params[4])
             items = []
-            for i in range(line_num + 1, line_num + num_items + 1):
+            end_line_num = line_num + num_items + 1
+            for i in range(line_num + 1, end_line_num):
                 items.append(temp_data[i].split(','))
             input_params.append(items)
-            # print(input_params)
+            line_num = end_line_num
+            
         try:
             start = datetime.datetime.now()
             process_transactions(input_params, conn)
             time_diff = (datetime.datetime.now() - start).total_seconds()
-            total_trxn_time += total_trxn_time + time_diff
+            total_trxn_time += (total_trxn_time + time_diff)
             trxn_latency_lst.append(time_diff * 1000)
-            num_of_trxn = num_of_trxn + 1
+            num_of_trxn += 1
         except psycopg2.Error as e:
             conn.rollback()
-            logging.debug("Exception: %s", e)
+            print("Exception: %s", e)
             continue
         except Exception as e:
             conn.rollback()
-            logging.debug("General Exception: %s", e)
+            print("General Exception: %s", e)
             continue
 except Exception as e:  
-    logging.debug("General Exception: %s", e)
+    print("General Exception: %s", e)
 finally:
+    print("Closing file & DB connection.")
     f.close()
     conn.close()
 
@@ -149,6 +151,7 @@ clients_performance.append(client_performance_record)
 
 # Export client.csv
 # print('clients_performance', clients_performance)
+print(clients_performance)
 print(clients_performance, file=sys.stderr)
 with open(output_fir + 'clients_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
@@ -162,7 +165,7 @@ throughput_data_frag = [[
     max(throughput_for_all),
     round(mean(throughput_for_all), 2)]
 ]
-print(throughput_data_frag, file=sys.stderr)
+print(throughput_data_frag, file=sys.stdout)
 with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
     csvwriter = csv.writer(csvfile)

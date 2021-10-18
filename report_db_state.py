@@ -60,6 +60,8 @@ data_cursor.execute(sum_from_stock_query)
 (sum_S_QUANTITY, sum_S_YTD, sum_S_ORDER_CNT, sum_S_REMOTE_CNT) = data_cursor.fetchone()
 # print(sum_S_QUANTITY, sum_S_YTD, sum_S_ORDER_CNT, sum_S_REMOTE_CNT)
 
+conn.commit()
+
 output_db_state = [
         [sum_W_YTD],
         [sum_D_YTD], [sum_D_NEXT_O_ID],
