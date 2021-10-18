@@ -101,7 +101,7 @@ try:
     for line_num in range(len(temp_data)):
         line = temp_data[line_num]
         input_params = line.split(',')
-
+ 
         if input_params[0] == 'N':
             num_items = int(input_params[4])
             items = []
@@ -109,23 +109,24 @@ try:
             for i in range(line_num + 1, end_line_num):
                 items.append(temp_data[i].split(','))
             input_params.append(items)
-            line_num = end_line_num
-            
-        try:
-            start = datetime.datetime.now()
-            process_transactions(input_params, conn)
-            time_diff = (datetime.datetime.now() - start).total_seconds()
-            total_trxn_time += (total_trxn_time + time_diff)
-            trxn_latency_lst.append(time_diff * 1000)
-            num_of_trxn += 1
-        except psycopg2.Error as e:
-            conn.rollback()
-            print("Exception: %s", e)
-            continue
-        except Exception as e:
-            conn.rollback()
-            print("General Exception: %s", e)
-            continue
+        
+        if input_params[0] in ('N', 'P', 'D', 'O', 'S', 'I', 'T', 'R'):
+            try:
+                start = datetime.datetime.now()
+                process_transactions(input_params, conn)
+                time_diff = (datetime.datetime.now() - start).total_seconds()
+                total_trxn_time += (total_trxn_time + time_diff)
+                trxn_latency_lst.append(time_diff * 1000)
+                num_of_trxn += 1
+            except psycopg2.Error as e:
+                conn.rollback()
+                print("Exception: %s", e)
+                continue
+            except Exception as e:
+                conn.rollback()
+                print("General Exception: %s", e)
+                continue
+
 except Exception as e:  
     print("General Exception: %s", e)
 finally:
