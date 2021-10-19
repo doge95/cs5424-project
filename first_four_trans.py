@@ -1,3 +1,4 @@
+import psycopg2
 from psycopg2 import sql
 
 def new_order (conn, cid, wid, did, num_items, items):
@@ -237,3 +238,25 @@ def order_status (conn, cwid, cdid, cid):
             print(*order_line, sep=", ")
     
     conn.commit()
+
+conn = psycopg2.connect(
+    database='wholesale',
+    user='root',
+    sslmode='verify-full',
+    # sslrootcert='/temp/cs4224h/certs/ca.crt',
+    # sslcert='/temp/cs4224h/certs/client.root.crt',
+    # sslkey='/temp/cs4224h/certs/client.root.key',
+    sslrootcert='../certs/ca.crt',
+    sslcert='../certs/client.root.crt',
+    sslkey='../certs/client.root.key',
+    port=26278,
+    host='xcnd45.comp.nus.edu.sg',
+    password='cs4224hadmin'
+)
+
+def main():
+    delivery(conn, 9, 5)
+    conn.close()
+
+if __name__ == "__main__":
+    main()

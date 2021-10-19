@@ -10,7 +10,6 @@ from last_four_trans import *
 
 def process_transactions(input_params, conn):
     if input_params[0] == 'N':
-        print("New Order ", input_params)
         new_order(conn,
                   int(input_params[1]),
                   int(input_params[2]),
@@ -20,7 +19,6 @@ def process_transactions(input_params, conn):
                   )
 
     elif input_params[0] == 'P':
-        print("Payment ", input_params)
         payment(conn,
                 int(input_params[1]),
                 int(input_params[2]),
@@ -29,15 +27,12 @@ def process_transactions(input_params, conn):
                 )
 
     elif input_params[0] == 'D':
-        print("Delivery ", input_params)
         delivery(conn, int(input_params[1]), int(input_params[2]))
 
     elif input_params[0] == 'O':
-        print("Order Status ", input_params)
         order_status(conn, int(input_params[1]), int(input_params[2]), int(input_params[3]))
 
     elif input_params[0] == 'S':
-        print("Stock Level ", input_params)
         get_stock_level_transaction(conn,
                                     int(input_params[1]),
                                     int(input_params[2]),
@@ -45,18 +40,15 @@ def process_transactions(input_params, conn):
                                     int(input_params[4]),
                                     )
     elif input_params[0] == 'I':
-        print("Popular Item ", input_params)
         get_popular_items_transaction(conn,
                                       int(input_params[1]),
                                       int(input_params[2]),
                                       int(input_params[3])
                                       )
     elif input_params[0] == 'T':
-        print("Top Balance ", input_params)
         get_top_balance_transaction(conn)
 
     elif input_params[0] == 'R':
-        print("Related Customer ", input_params)
         get_related_customer_transaction(conn,
                                          int(input_params[1]),
                                          int(input_params[2]),
@@ -114,13 +106,14 @@ try:
             try:
                 start = datetime.datetime.now()
                 process_transactions(input_params, conn)
+                print(input_params)
                 time_diff = (datetime.datetime.now() - start).total_seconds()
                 total_trxn_time += (total_trxn_time + time_diff)
                 trxn_latency_lst.append(time_diff * 1000)
                 num_of_trxn += 1
             except psycopg2.Error as e:
                 conn.rollback()
-                print("Exception: %s", e)
+                print("psycopg2 Exception: %s", e)
                 continue
             except Exception as e:
                 conn.rollback()
@@ -128,7 +121,7 @@ try:
                 continue
 
 except Exception as e:  
-    print("General Exception: %s", e)
+    print("Exception: %s", e)
 finally:
     print("Closing file & DB connection.")
     f.close()
@@ -166,7 +159,8 @@ throughput_data_frag = [[
     max(throughput_for_all),
     round(mean(throughput_for_all), 2)]
 ]
-print(throughput_data_frag, file=sys.stdout)
+print(throughput_data_frag)
+print(throughput_data_frag, file=sys.stderr)
 with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
     # creating a csv writer object
     csvwriter = csv.writer(csvfile)
