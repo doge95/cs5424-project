@@ -82,12 +82,13 @@ clients_performance = []
 char_position=transaction_file.rfind('.txt')
 client_num = transaction_file[char_position - 2:char_position].replace('/', '')
 
+initial_timestamp = datetime.datetime.now()
 try: 
     f = open(transaction_file, "r")
     # append each line in the file to a list
     temp_data = f.read().splitlines()
     num_of_trxn = 0
-    total_trxn_time = 0
+    # total_trxn_time = 0
     trxn_latency_lst = []
 
     for line_num in range(len(temp_data)):
@@ -108,7 +109,7 @@ try:
                 process_transactions(input_params, conn)
                 print(input_params)
                 time_diff = (datetime.datetime.now() - start).total_seconds()
-                total_trxn_time += (total_trxn_time + time_diff)
+                # total_trxn_time += (total_trxn_time + time_diff)
                 trxn_latency_lst.append(time_diff * 1000)
                 num_of_trxn += 1
             except psycopg2.Error as e:
@@ -126,6 +127,8 @@ finally:
     print("Closing file & DB connection.")
     f.close()
     conn.close()
+
+total_trxn_time = (datetime.datetime.now() - initial_timestamp).total_seconds()
 
 client_throughput = 0 if total_trxn_time == 0 else round(num_of_trxn / total_trxn_time, 2)
 throughput_for_all.append(client_throughput)
@@ -147,10 +150,13 @@ clients_performance.append(client_performance_record)
 # print('clients_performance', clients_performance)
 print(clients_performance)
 print(clients_performance, file=sys.stderr)
-with open(output_fir + 'clients_' + client_num + '.csv', 'w') as csvfile:
-    # creating a csv writer object
-    csvwriter = csv.writer(csvfile)
-    csvwriter.writerows(clients_performance)
+try:
+    with open(output_fir + 'clients_' + client_num + '.csv', 'w') as csvfile:
+        # creating a csv writer object
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerows(clients_performance)
+except Exception as e:
+    print("Exception in output clients {}: ".format(client_num), e)
 
 # Export throughput.csv
 
@@ -161,14 +167,17 @@ throughput_data_frag = [[
 ]
 print(throughput_data_frag)
 print(throughput_data_frag, file=sys.stderr)
-with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
-    # creating a csv writer object
-    csvwriter = csv.writer(csvfile)
-    csvwriter.writerows(
-        #     [[
-        #     min(throughput_for_all),
-        #     max(throughput_for_all),
-        #     round(mean(throughput_for_all), 2)]
-        # ]
-        throughput_data_frag
+try:
+    with open(output_fir + 'throughput_' + client_num + '.csv', 'w') as csvfile:
+        # creating a csv writer object
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerows(
+            #     [[
+            #     min(throughput_for_all),
+            #     max(throughput_for_all),
+            #     round(mean(throughput_for_all), 2)]
+            # ]
+            throughput_data_frag
     )
+except Exception as e:
+    print("Exception in output throughput {}: ".format(client_num), e)
