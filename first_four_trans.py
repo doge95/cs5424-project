@@ -1,4 +1,3 @@
-import psycopg2
 from psycopg2 import sql
 
 def new_order (conn, cid, wid, did, num_items, items):
@@ -184,26 +183,31 @@ def delivery (conn, wid, carrierid):
             cur.execute(
                 "SELECT O_ID, O_C_ID FROM orders WHERE O_W_ID = %s AND O_D_ID = %s AND O_CARRIER_ID IS NULL order by O_ID ASC LIMIT 1", (wid, did)
             )
-            oid, cid = cur.fetchone()
+            try: 
+                oid, cid = cur.fetchone()
+            except Exception as e:
+                conn.rollback()
+                continue
 
-            # Update the order X by setting O_CARRIER_ID to CARRIER_ID
-            cur.execute(
-                "UPDATE orders SET O_CARRIER_ID = %s WHERE O_ID = %s AND O_W_ID = %s AND O_D_ID = %s", (carrierid, oid, wid, did)
-            )
+            if oid is not None:
+                # Update the order X by setting O_CARRIER_ID to CARRIER_ID
+                cur.execute(
+                    "UPDATE orders SET O_CARRIER_ID = %s WHERE O_ID = %s AND O_W_ID = %s AND O_D_ID = %s", (carrierid, oid, wid, did)
+                )
 
-            # Update all the order-lines in X by setting OL_DELIVERY_D to the current date and time
-            cur.execute(
-                "UPDATE order_line SET OL_DELIVERY_D = current_timestamp() WHERE OL_W_ID = %s AND OL_D_ID = %s AND OL_O_ID = %s", (wid, did, oid)
-            )
+                # Update all the order-lines in X by setting OL_DELIVERY_D to the current date and time
+                cur.execute(
+                    "UPDATE order_line SET OL_DELIVERY_D = current_timestamp() WHERE OL_W_ID = %s AND OL_D_ID = %s AND OL_O_ID = %s", (wid, did, oid)
+                )
 
-            # Update customer C
-            # Increment C_BALANCE by B, where B denote the sum of OL_AMOUNT for all the items placed in order X
-            # Increment C_DELIVERY_CNT by 1
-            cur.execute(
-                "UPDATE customer SET (C_BALANCE, C_DELIVERY_CNT) = (C_BALANCE + (SELECT SUM(OL_AMOUNT) FROM order_line WHERE OL_W_ID = %s AND OL_D_ID = %s and OL_O_ID = %s), C_DELIVERY_CNT + 1) WHERE C_ID = %s AND C_W_ID = %s AND C_D_ID = %s", (wid, did, oid, cid, wid, did)
-            )
+                # Update customer C
+                # Increment C_BALANCE by B, where B denote the sum of OL_AMOUNT for all the items placed in order X
+                # Increment C_DELIVERY_CNT by 1
+                cur.execute(
+                    "UPDATE customer SET (C_BALANCE, C_DELIVERY_CNT) = (C_BALANCE + (SELECT SUM(OL_AMOUNT) FROM order_line WHERE OL_W_ID = %s AND OL_D_ID = %s and OL_O_ID = %s), C_DELIVERY_CNT + 1) WHERE C_ID = %s AND C_W_ID = %s AND C_D_ID = %s", (wid, did, oid, cid, wid, did)
+                )
             
-        conn.commit()
+                conn.commit()
 
 def order_status (conn, cwid, cdid, cid):
     with conn.cursor() as cur:
@@ -238,25 +242,3 @@ def order_status (conn, cwid, cdid, cid):
             print(*order_line, sep=", ")
     
     conn.commit()
-
-conn = psycopg2.connect(
-    database='wholesale',
-    user='root',
-    sslmode='verify-full',
-    # sslrootcert='/temp/cs4224h/certs/ca.crt',
-    # sslcert='/temp/cs4224h/certs/client.root.crt',
-    # sslkey='/temp/cs4224h/certs/client.root.key',
-    sslrootcert='../certs/ca.crt',
-    sslcert='../certs/client.root.crt',
-    sslkey='../certs/client.root.key',
-    port=26278,
-    host='xcnd45.comp.nus.edu.sg',
-    password='cs4224hadmin'
-)
-
-def main():
-    delivery(conn, 9, 5)
-    conn.close()
-
-if __name__ == "__main__":
-    main()
