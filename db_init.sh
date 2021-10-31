@@ -1,6 +1,6 @@
 #!/bin/bash
-# This script is to create database and/ or import data into database
-#set -x
+# This script is to create database and import data into database
+# set -x
 
 USER="cs4224h"
 HOME_DIR="/home/stuproj/cs4224h"
@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS order_line
     OL_NUMBER      INTEGER     NOT NULL,
     OL_I_ID        INTEGER     NOT NULL REFERENCES item (I_ID),
     OL_DELIVERY_D  TIMESTAMP,
-    OL_AMOUNT      DECIMAL(6, 2),
+    OL_AMOUNT      DECIMAL(7, 2),
     OL_SUPPLY_W_ID INTEGER,
     OL_QUANTITY    DECIMAL(2, 0),
     OL_DIST_INFO   CHAR(24),
@@ -245,26 +245,20 @@ if [ ! -f "$COCKROACH_DATA_DIR/district.csv" ]; then
 fi
 
 # Copy files to other four nodes
-echo "Copying files to other nodes..."
+echo "Copying files to other nodes ..."
 copy_files
 echo Done
 
-# Check database & tables
-echo "Checking database & tables..."
-check_db
-
-# If wholesale database does not exit, create the database
-if grep -q 'database "wholesale" does not exist' "$QUERY_OUTPUT"; then
-    echo "Creating database..."
-    create_database
-fi
+echo "Creating database ..."
+create_database
+echo Done
 
 # If wholesale database exits, import data into the database
-echo "Open python file server on each node..."
+echo "Open python file server on each node ..."
 start_file_servers
 
-echo "Import data into database..."
+echo "Import data into database ... It will take around 3 minutes ..."
 import_data
 
-echo "Stop python file server on each node..."
+echo "Stop python file server on each node ..."
 stop_file_servers
