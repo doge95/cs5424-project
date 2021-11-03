@@ -4,7 +4,7 @@
 
 USER="cs4224h"
 HOME_DIR="/home/stuproj/cs4224h"
-MAIN_SERVER="xcnd45"
+MAIN_SERVER=`hostname -s`
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
 PORT="26278"
 PROJECT_DATA_DIR="$HOME_DIR/project_files_4/data_files"

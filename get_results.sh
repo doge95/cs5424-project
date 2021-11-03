@@ -1,9 +1,9 @@
 #!/bin/bash
-# This script is to get all client results from each nodes.
+# This script is to get all client results from each node.
 # Require argument - output directory path
 # set -x
 OUTPUT_DIR="$1"
-MAIN_SERVER="xcnd45"
+MAIN_SERVER=`hostname -s`
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
 
 server=`hostname -s`

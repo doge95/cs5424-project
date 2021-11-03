@@ -7,7 +7,7 @@
 HOME_DIR="/temp/cs4224h"
 DRIVER_DIR="$HOME_DIR/cockroach_driver"
 USER="cs4224h"
-MAIN_SERVER="xcnd45"
+MAIN_SERVER=`hostname -s`
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
 
 workload="$1"
@@ -34,6 +34,5 @@ for server in $SERVERS; do
         scp -r $HOME_DIR/cockroach_driver $USER@$server:$HOME_DIR
         echo "Run cockroach client program on $server ..."
         ssh -q $USER@$server "$DRIVER_DIR/client_exec.sh $workload &"
-        
     fi
 done
