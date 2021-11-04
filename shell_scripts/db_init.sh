@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS orders
     O_ENTRY_D    TIMESTAMP,
     PRIMARY KEY  (O_W_ID, O_D_ID, O_ID),
     FOREIGN KEY  (O_W_ID, O_D_ID, O_C_ID) REFERENCES customer (C_W_ID, C_D_ID, C_ID),
+    UNIQUE (O_W_ID, O_D_ID, O_ID, O_C_ID),
     FAMILY o_txn_info (O_ID, O_W_ID, O_D_ID, O_C_ID, O_CARRIER_ID),
     FAMILY o_meta (O_OL_CNT, O_ALL_LOCAL, O_ENTRY_D)
 );
