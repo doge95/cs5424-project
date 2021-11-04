@@ -1,12 +1,13 @@
 #!/bin/bash
 # This script is to create database and import data into database
+# Require arguement: db port number
 # set -x
 
 USER="cs4224h"
 HOME_DIR="/home/stuproj/cs4224h"
 MAIN_SERVER=`hostname -s`
 SERVERS="xcnd45 xcnd46 xcnd47 xcnd48 xcnd49"
-PORT="26278"
+PORT="$1"
 PROJECT_DATA_DIR="$HOME_DIR/project_files_4/data_files"
 COCKROACH_DATA_DIR="$HOME_DIR/cockroach_data_files"
 COCKROACH="/temp/cs4224h/cockroach-v21.1.7.linux-amd64/cockroach"
