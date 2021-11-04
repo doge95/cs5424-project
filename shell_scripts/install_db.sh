@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script is to install Cockroach DB and set a cluster.
 # Require arguments: http port number, db port number
-set -x
+# set -x
 
 HOME_DIR="/temp/cs4224h/test"
 BINARY_DIR="$HOME_DIR/cockroach-v21.1.7.linux-amd64"
@@ -71,10 +71,10 @@ start_nodes(){
         echo "Start CockroachDB node on $server ..."
         if [[ "$server" == "$MAIN_SERVER" ]]; then
             cd $HOME_DIR
-            $COCKROACH start --certs-dir=$CERT_DIR --listen-addr=$server:$db_port --join=$join_list --cache=.25 --max-sql-memory=.4 --background --http-addr=$server:$http_port
+            $COCKROACH start --certs-dir=$CERT_DIR --listen-addr=$server:$db_port --join=$join_list --cache=.25 --max-sql-memory=.25 --background --http-addr=$server:$http_port
         else 
             hostname=`ssh -q $USER@$server "hostname -s"`
-            ssh -q $USER@$server "cd $HOME_DIR; $COCKROACH start --certs-dir=$CERT_DIR --listen-addr=$hostname:$db_port --join=$join_list --cache=.25 --max-sql-memory=.4 --background --http-addr=$hostname:$http_port > /dev/null 2>&1 &"
+            ssh -q $USER@$server "cd $HOME_DIR; $COCKROACH start --certs-dir=$CERT_DIR --listen-addr=$hostname:$db_port --join=$join_list --cache=.25 --max-sql-memory=.25 --background --http-addr=$hostname:$http_port > /dev/null 2>&1 &"
         fi
     done
 }

@@ -52,10 +52,6 @@ stop_file_servers () {
     done
 }
 
-check_db() {
-    $COCKROACH sql --certs-dir=$CERT_DIR --host=$MAIN_SERVER:$PORT --execute='USE wholesale; show tables;' --format=raw &> $QUERY_OUTPUT
-}
-
 create_database () {
     $COCKROACH sql --certs-dir=$CERT_DIR  --host=$MAIN_SERVER:$PORT --execute='CREATE DATABASE IF NOT EXISTS wholesale;
 USE wholesale;
